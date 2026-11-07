@@ -1,32 +1,19 @@
 "use client";
 
 import { Button, Empty, MetricRow, Section } from "@/components/ui";
+import { ReadinessCard } from "@/components/readiness-card";
 import { useDemo } from "@/lib/demo-store";
-import { DEMO_EXAM } from "@/lib/seed";
-import { daysUntil, todayISO } from "@/lib/utils";
-
-function ddayLabel(days: number): string {
-  if (days === 0) return "D-DAY";
-  if (days > 0) return `D-${days}`;
-  return `D+${Math.abs(days)}`;
-}
+import { todayISO } from "@/lib/utils";
 
 export default function RecallPage() {
   const { state, reviewRecall } = useDemo();
   const items = state.recall.filter((item) => item.userId === state.user.id);
   const due = items.filter((item) => item.dueDate <= todayISO());
   const remaining = items.length - due.length;
-  const days = daysUntil(DEMO_EXAM.date);
 
   return (
     <div className="page">
-      <div className="dday">
-        <div className="dday-label">다음 시험</div>
-        <div className="dday-value">{ddayLabel(days)}</div>
-        <div className="dday-name">{DEMO_EXAM.name}</div>
-        <div className="dday-date">{DEMO_EXAM.date}</div>
-        <span className="dday-demo">데모 일정</span>
-      </div>
+      <ReadinessCard />
 
       <div style={{ height: 12 }} />
       <MetricRow

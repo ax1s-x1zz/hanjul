@@ -3,11 +3,12 @@
 import { useMemo, useState } from "react";
 
 import { Bar, Empty, MetricRow, Section, Segmented } from "@/components/ui";
+import { KnowledgeMapView } from "@/components/knowledge-map";
 import { useDemo } from "@/lib/demo-store";
 import { DEMO_REGION, DEMO_SCHOOL } from "@/lib/seed";
 import { todayISO } from "@/lib/utils";
 
-type Tab = "mine" | "region";
+type Tab = "mine" | "map" | "region";
 
 function streak(days: string[]): number {
   const unique = Array.from(new Set(days)).sort();
@@ -86,11 +87,14 @@ export default function ReportPage() {
         onChange={setTab}
         options={[
           { value: "mine", label: "내 기록" },
+          { value: "map", label: "지식 지도" },
           { value: "region", label: "지역 막힘" },
         ]}
       />
 
-      {tab === "mine" ? (
+      {tab === "map" ? (
+        <KnowledgeMapView />
+      ) : tab === "mine" ? (
         <>
           <div style={{ height: 12 }} />
           <MetricRow

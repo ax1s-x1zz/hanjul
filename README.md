@@ -41,6 +41,7 @@ npm start
 - Supabase 스키마·RLS·신고 RPC: [`web/supabase/schema.sql`](./web/supabase/schema.sql)
 - NEIS 프록시: `GET /api/neis/timetable?date=2026-11-03&grade=2&class=5`
 - 환경 변수: `web/.env.example` → `web/.env.local`
+- Supabase 처음 설정: [`web/SUPABASE_SETUP.md`](./web/SUPABASE_SETUP.md) (익명 로그인 10분 가이드)
 
 ---
 

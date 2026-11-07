@@ -13,6 +13,24 @@ export default function LoginPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  async function signInAnonymously() {
+    const supabase = await getSupabaseBrowser();
+    if (!supabase) {
+      setMessage("Supabase 키를 먼저 설정해주세요.");
+      return;
+    }
+    setBusy(true);
+    const { error } = await supabase.auth.signInAnonymously();
+    if (error) {
+      setMessage(
+        `${error.message} — Supabase Authentication → Providers에서 Anonymous Sign-Ins를 켜주세요.`,
+      );
+      setBusy(false);
+      return;
+    }
+    window.location.assign("/today");
+  }
+
   async function signIn(provider: "google" | "kakao") {
     const supabase = await getSupabaseBrowser();
     if (!supabase) {
@@ -84,6 +102,16 @@ export default function LoginPage() {
                 variant="primary"
                 block
                 disabled={busy}
+                onClick={() => void signInAnonymously()}
+              >
+                익명으로 시작하기
+              </Button>
+              <p className="helper" style={{ margin: "0 0 4px", textAlign: "center" }}>
+                이메일 없이 바로 시작합니다.
+              </p>
+              <Button
+                block
+                disabled={busy}
                 onClick={() => void signIn("google")}
               >
                 Google로 계속하기
@@ -97,7 +125,7 @@ export default function LoginPage() {
               </Button>
             </div>
 
-            <div className="login-divider">또는</div>
+            <div className="login-divider">또는 이메일</div>
 
             <label className="field-label" htmlFor="email">
               이메일

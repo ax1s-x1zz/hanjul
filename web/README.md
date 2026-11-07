@@ -47,6 +47,9 @@ npm start
 
 ## Supabase 연결 (Postgres + Auth + RLS)
 
+> **처음이면 [SUPABASE_SETUP.md](./SUPABASE_SETUP.md)를 먼저 보세요.**
+> 익명 로그인만 켜면 이메일/구글 설정 없이 10분 안에 실제 DB를 사용할 수 있습니다.
+
 1. Supabase 프로젝트 생성
 2. SQL Editor에서 [`supabase/schema.sql`](./supabase/schema.sql) 실행
 3. `.env.example` → `.env.local` 복사 후 값 입력
@@ -64,7 +67,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 
 ### Auth
 
-- `/login`: Google · 카카오 · 이메일 매직 링크
+- `/login`: **익명 시작** · Google · 카카오 · 이메일 매직 링크
+- 익명 로그인: Authentication → Providers → Anonymous Sign-Ins 활성화
 - `/auth/callback`: OAuth code exchange
 - `middleware.ts`: `/today`, `/feed`, `/report`, `/recall`, `/settings` 보호
 - Supabase Dashboard → Authentication → Providers에서 Google/Kakao 활성화

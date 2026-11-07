@@ -3,31 +3,30 @@ from __future__ import annotations
 
 import streamlit as st
 
-from core import config, db, metrics, neis, utils
+from core import config, db, metrics, neis, ui, utils
 
 
 def render() -> None:
-    st.markdown("<div class='hj-hero'>한줄</div>", unsafe_allow_html=True)
+    st.markdown("<div class='hj-hero'>한줄<span>.</span></div>", unsafe_allow_html=True)
     st.markdown(
-        f"<div class='hj-hero-sub'>{config.TAGLINE}</div>",
+        "<div class='hj-hero-sub'>수업은 학교가 알려주고,<br>"
+        "배운 것은 당신이 한 줄로 남깁니다.</div>",
         unsafe_allow_html=True,
     )
     st.write("")
-    st.markdown(
-        "수업 시간표는 학교가 알려주고, **배운 것은 당신이 한 줄로 남깁니다.** "
-        "상세 기록은 나만 보고, 공개를 선택한 한 줄만 광명 친구들과 나눕니다."
-    )
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.markdown("#### ⏱️ 10초")
-        st.caption("시간표가 자동으로 채워줍니다.")
-    with col2:
-        st.markdown("#### 🔒 나만")
-        st.caption("리포트와 막힘 분석은 비공개.")
-    with col3:
-        st.markdown("#### 🌿 광명")
-        st.caption("공개한 한 줄만 지역 피드로.")
+    st.markdown(
+        ui.feature("⏱", "10초 기록", "시간표가 과목과 교시를 자동으로 채워줍니다."),
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        ui.feature("🔒", "나만 보는 리포트", "상세 기록과 막힘 분석은 나만 봅니다."),
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        ui.feature("🌿", "광명 피드", "공개를 선택한 한 줄만 지역 친구들과 나눕니다."),
+        unsafe_allow_html=True,
+    )
 
     st.write("")
     if st.button("데모로 시작하기 · 2학년 5반", type="primary", use_container_width=True):

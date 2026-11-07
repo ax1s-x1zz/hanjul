@@ -4,10 +4,9 @@ from __future__ import annotations
 from collections import Counter
 from datetime import date
 
-import pandas as pd
 import streamlit as st
 
-from core import config, db, llm
+from core import config, db, llm, ui
 
 
 def _streak(days: list[str]) -> int:
@@ -58,18 +57,14 @@ def _my_report(user) -> None:
     left, right = st.columns(2)
     with left:
         st.markdown("##### 과목 분포")
-        df = pd.DataFrame(
-            {"기록 수": [subject_counts[name] for name in subject_counts]},
-            index=list(subject_counts.keys()),
-        )
-        st.bar_chart(df)
+        subject_max = max(subject_counts.values(), default=1)
+        for name, count in subject_counts.most_common():
+            st.markdown(ui.bar_row(name, count, subject_max, "회"), unsafe_allow_html=True)
     with right:
         st.markdown("##### 활동 분포")
-        df = pd.DataFrame(
-            {"기록 수": [activity_counts[name] for name in activity_counts]},
-            index=list(activity_counts.keys()),
-        )
-        st.bar_chart(df)
+        activity_max = max(activity_counts.values(), default=1)
+        for name, count in activity_counts.most_common():
+            st.markdown(ui.bar_row(name, count, activity_max, "회"), unsafe_allow_html=True)
 
     st.markdown("#### 막힌 개념 TOP 3")
     if stuck_top:
@@ -90,19 +85,26 @@ def _region_stuck() -> None:
         st.info("아직 충분히 쌓인 개념이 없습니다.")
         return
 
-    df = pd.DataFrame(
-        {"막힌 학생 수": [row["count"] for row in rows]},
-        index=[row["concept"] for row in rows],
-    )
-    st.bar_chart(df)
+    max_count = max((row["count"] for row in rows), default=1)
+    for row in rows:
+        st.markdown(
+            ui.bar_row(row["concept"], row["count"], max_count, "명"),
+            unsafe_allow_html=True,
+        )
     st.markdown("#### 이번 주 광명의 막힘")
     for rank, row in enumerate(rows[:10], start=1):
         st.markdown(f"**{rank}. {row['concept']}** · {row['count']}명")
 
 
 def render(user) -> None:
-    st.markdown("### 📊 리포트")
-    st.caption("내 리포트는 나만 볼 수 있습니다. 지역 막힘은 익명 집계입니다.")
+    st.markdown(
+        ui.page_header(
+            "리포트",
+            "내 기록은 나만, 지역 막힘은 익명으로.",
+            "PRIVATE",
+        ),
+        unsafe_allow_html=True,
+    )
     tab_mine, tab_region = st.tabs(["내 리포트", "지역 막힘"])
     with tab_mine:
         _my_report(user)

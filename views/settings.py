@@ -5,12 +5,14 @@ import json
 
 import streamlit as st
 
-from core import config, db
+from core import config, db, ui
 
 
 def render(user) -> None:
-    st.markdown("### ⚙️ 설정")
-    st.caption("프로필과 데이터 권리를 관리합니다.")
+    st.markdown(
+        ui.page_header("설정", "프로필과 데이터 권리를 관리합니다.", "MY"),
+        unsafe_allow_html=True,
+    )
 
     with st.container(border=True):
         st.markdown(f"**{user['nickname']}**")

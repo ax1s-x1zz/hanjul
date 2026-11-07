@@ -5,7 +5,7 @@ from datetime import date, datetime, timedelta
 
 import streamlit as st
 
-from core import config, db, neis
+from core import config, db, neis, ui
 
 
 def _get_exam() -> dict | None:
@@ -38,19 +38,25 @@ def _dday_label(exam_date: date) -> str:
 
 
 def render(user) -> None:
-    st.markdown("### ⏰ 시험 리콜")
-    st.caption("내가 막힌 개념만 모아서, 시험 전에 다시 꺼내봅니다.")
+    st.markdown(
+        ui.page_header("시험 리콜", "막힌 개념만 다시 꺼내봅니다.", "SM-2"),
+        unsafe_allow_html=True,
+    )
 
     exam = _get_exam()
     if exam:
         exam_date = datetime.strptime(exam["date"], "%Y%m%d").date()
-        st.markdown(f"#### {exam['event']} · {_dday_label(exam_date)}")
-        st.caption(exam_date.isoformat())
+        st.markdown(
+            ui.dday_card(
+                exam["event"],
+                _dday_label(exam_date),
+                exam_date.isoformat(),
+                bool(exam.get("is_demo")),
+            ),
+            unsafe_allow_html=True,
+        )
         if exam.get("is_demo"):
-            st.warning(
-                "실제 학사일정에 등록된 시험이 없어 데모 일정으로 표시합니다. "
-                "실제 일정이 등록되면 자동으로 대체됩니다."
-            )
+            st.caption("데모 일정입니다. 실제 학사일정이 등록되면 자동으로 대체됩니다.")
     else:
         st.info("예정된 시험이 없습니다. 그래도 오늘의 복습 카드는 사용할 수 있습니다.")
 

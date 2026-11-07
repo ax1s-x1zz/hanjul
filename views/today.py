@@ -5,7 +5,7 @@ from datetime import date
 
 import streamlit as st
 
-from core import config, db, llm, metrics, neis, privacy, utils
+from core import config, db, llm, metrics, neis, privacy, ui, utils
 
 
 def _load_rows(user, day: str) -> tuple[list[dict], str | None]:
@@ -186,9 +186,13 @@ def _render_editor(user, day: str, row: dict) -> None:
 
 
 def render(user) -> None:
-    st.markdown("### 📝 오늘의 수업")
-    st.caption(
-        f"{user['nickname']} · 고{user['grade']} · {user['class_no']}반 · {user['region']}"
+    st.markdown(
+        ui.page_header(
+            "오늘의 수업",
+            f"{user['nickname']} · 고{user['grade']} · {user['class_no']}반",
+            "DEMO" if config.DEMO_MODE else "",
+        ),
+        unsafe_allow_html=True,
     )
 
     _render_pending(user)
@@ -275,14 +279,16 @@ def render(user) -> None:
         with st.container(border=True):
             col1, col2 = st.columns([4, 1])
             subject = row.get("subject_raw") or "수업 정보 없음"
-            badge = " `행사`" if row.get("is_event") else ""
-            col1.markdown(f"**{period}교시 · {subject}**{badge}")
-            if existing:
-                col1.caption(f"✓ {existing['learned'][:60]}")
-                if post and post["status"] == "visible":
-                    col1.caption("🌿 광명 피드에 공개됨")
-            else:
-                col1.caption("아직 기록하지 않았습니다.")
+            col1.markdown(
+                ui.period_row(
+                    period,
+                    subject,
+                    existing["learned"] if existing else None,
+                    bool(row.get("is_event")),
+                    bool(post and post["status"] == "visible"),
+                ),
+                unsafe_allow_html=True,
+            )
             if col2.button(
                 "수정" if existing else "기록",
                 key=f"edit-{day}-{period}",

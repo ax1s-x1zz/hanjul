@@ -9,7 +9,35 @@
 - **한 줄 소개**: NEIS 시간표로 자동 채워지는 10초 학습 기록 + 광명시 배움 피드
 - **개발 배경**: 2026 지역연합 해커톤
 - **데모 학교·학급**: 진성고등학교 2학년 5반
-- **주요 문서**: [PRD.md](./PRD.md) · [DESIGN.md](./DESIGN.md)
+- **주요 문서**: [PRD.md](./PRD.md) · [DESIGN.md](./DESIGN.md) · [web/README.md](./web/README.md)
+
+> **제품용 웹앱**: [`web/`](./web) — Next.js 15 · React 19 · TypeScript · Supabase  
+> **Streamlit**: 이 README의 루트 앱 — 해커톤 fallback / 프로토타입
+
+---
+
+## Next.js 웹앱 (권장)
+
+```bash
+cd web
+npm install
+npm run dev
+# http://localhost:3000
+```
+
+프로덕션 데모(권장, dev 배지 없음):
+
+```bash
+cd web
+npm run build
+npm start
+```
+
+- 실제 라우팅(`/today`, `/feed`, `/report`, `/recall`, `/settings`)
+- **진짜 바텀시트** 기록 UI · 페이지 전환 · 즉각 상태 반영
+- 데모는 localStorage 시드로 동작 (Supabase 키 없이 가능)
+- Supabase 스키마·RLS: [`web/supabase/schema.sql`](./web/supabase/schema.sql)
+- NEIS 프록시: `GET /api/neis/timetable?date=2026-11-03&grade=2&class=5`
 
 ---
 

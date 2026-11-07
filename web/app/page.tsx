@@ -1,0 +1,89 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+
+import { PhoneShell } from "@/components/phone-shell";
+import { Button } from "@/components/ui";
+import { useDemo } from "@/lib/demo-store";
+import { DEMO_SCHOOL, DEMO_REGION } from "@/lib/seed";
+import { ClockIcon, LockIcon, PinIcon } from "@/components/icons";
+
+const FEATURES = [
+  {
+    Icon: ClockIcon,
+    title: "10초 기록",
+    body: "시간표가 과목과 교시를 자동으로 채워줍니다.",
+  },
+  {
+    Icon: LockIcon,
+    title: "나만 보는 기록",
+    body: "상세 리포트와 막힘 분석은 나만 봅니다.",
+  },
+  {
+    Icon: PinIcon,
+    title: "광명 피드",
+    body: "공개한 한 줄만 지역 친구들과 나눕니다.",
+  },
+];
+
+export default function OnboardingPage() {
+  const router = useRouter();
+  const { switchUser, notify } = useDemo();
+
+  function start(userId: string, message: string) {
+    switchUser(userId);
+    notify(message);
+    window.setTimeout(() => router.push("/today"), 80);
+  }
+
+  return (
+    <PhoneShell noNav noHeader screenClassName="onboarding-screen">
+      <div className="onboarding-hero">
+        <div className="onboarding-brand">한줄.</div>
+        <h1 className="onboarding-title">
+          오늘 배운 한 줄,
+          <br />
+          여기 남기세요.
+        </h1>
+        <p className="onboarding-sub">시간표는 학교가, 기록은 당신이.</p>
+      </div>
+
+      <div className="onboarding-body">
+        <div>
+          {FEATURES.map(({ Icon, title, body }) => (
+            <div className="feature" key={title}>
+              <span className="feature-icon">
+                <Icon />
+              </span>
+              <div>
+                <b>{title}</b>
+                <p>{body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="onboarding-actions">
+          <Button
+            variant="primary"
+            block
+            onClick={() => start("demo-main", "데모 계정으로 시작합니다.")}
+          >
+            데모로 시작하기
+          </Button>
+          <Button block onClick={() => start("demo-friend", "친구 계정으로 전환했습니다.")}>
+            친구 계정으로 체험하기
+          </Button>
+        </div>
+
+        <p className="helper" style={{ marginTop: 14 }}>
+          {DEMO_SCHOOL} 2학년 5반 · {DEMO_REGION}
+        </p>
+        <p className="helper">
+          실명·전화번호·주소·사진은 저장하지 않습니다. 데모 데이터는 이 브라우저에만
+          저장됩니다.
+        </p>
+      </div>
+    </PhoneShell>
+  );
+}

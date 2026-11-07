@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import streamlit as st
-import streamlit.components.v1 as components
 
 from core import config, db, theme, ui
 from views import feed, onboarding, recall, report, settings, today
@@ -26,18 +25,25 @@ PAGES = {
     "리콜": recall.render,
     "설정": settings.render,
 }
+TITLES = {
+    "오늘": None,
+    "피드": "광명 피드",
+    "리포트": "리포트",
+    "리콜": "시험 리콜",
+    "설정": "설정",
+}
 
 
 def _scroll_screen_top() -> None:
     """Reset the page scroll when the page changes (not on every rerun)."""
-    components.html(
+    st.iframe(
         """
         <script>
         const el = window.parent.document.querySelector('.st-key-phone_screen');
         if (el) { el.scrollTop = 0; }
         </script>
         """,
-        height=0,
+        height=1,
     )
 
 
@@ -79,7 +85,7 @@ with st.container(key="phone_screen"):
             st.session_state["_last_nav"] = nav
             _scroll_screen_top()
 
-        st.markdown(ui.phone_header(user), unsafe_allow_html=True)
+        st.markdown(ui.phone_header(user, TITLES.get(nav)), unsafe_allow_html=True)
         with st.container(key="page_content"):
             PAGES[nav](user)
         _bottom_nav(nav)

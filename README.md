@@ -15,10 +15,11 @@
 
 ## 디자인
 
-- **레퍼런스**: Threads(텍스트 피드·하단 탭), Toss(430px 모바일·4px 그리드·단일 액센트), BeReal(정직한 기록), 당근(지역 필), Duolingo(스트릭), GitHub 잔디(축적), Linear/Notion(차분한 타이포)
-- **폰 프레임**: 430×886px, 9px 베젤, 50px 라운드, 내부 스크롤, 하단 탭 고정
+- **레퍼런스**: Threads(헤어라인 피드), Toss(390px·4px 그리드·단일 액센트), BeReal(정직한 기록), 당근(지역 필), Duolingo(스트릭), **Things 3(inset grouped list)**, **Day One(사적 기록)**, Linear/Notion(차분한 타이포), Apple HIG(44pt·탭 바), Material 3(segmented button)
+- **폰 프레임**: 390×844px, 8px 베젤, 44px 라운드, 내부 스크롤, **아이콘 하단 탭 + 홈 인디케이터**
+- **디자인 토큰**: 단일 액센트 `#5546F5`, 5단 타이포 위계, 1px 헤어라인, 그림자 최소
 - **모바일**: `max-width: 640px`에서 프레임을 제거하고 풀블리드
-- 상세 토큰·규칙: [DESIGN.md](./DESIGN.md)
+- 상세 진단·토큰·컴포넌트 규칙: [DESIGN.md](./DESIGN.md)
 
 ---
 

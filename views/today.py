@@ -161,6 +161,10 @@ def _render_editor(user, day: str, row: dict) -> None:
         if not clean:
             st.error("공개할 수 있는 내용이 없습니다. 표현을 수정해주세요.")
             return
+        # If this log was already public, remove the stale public copy now.
+        # The new copy is created only after the user confirms the preview.
+        if post:
+            db.delete_post_by_log(log_id)
         tags = llm.suggest_tags(text, row["subject_norm"])
         st.session_state["pending_publish"] = {
             "log_id": log_id,
@@ -190,7 +194,12 @@ def render(user) -> None:
     _render_pending(user)
 
     today = date.today()
-    default_date = date.fromisoformat(config.DEMO_DATE) if config.DEMO_MODE else today
+    default_date = today
+    if config.DEMO_MODE:
+        try:
+            default_date = date.fromisoformat(config.DEMO_DATE)
+        except ValueError:
+            default_date = today
     selected = st.date_input("날짜", value=default_date, key="today_date")
     day = selected.isoformat()
     rows, error = _load_rows(user, day)

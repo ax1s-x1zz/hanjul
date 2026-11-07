@@ -324,7 +324,14 @@ def upsert_log(
 
 
 def get_week_logs(user_id: str, days: int = 7) -> list[sqlite3.Row]:
-    cutoff = (date.today() - timedelta(days=days - 1)).isoformat()
+    cutoff_date = date.today() - timedelta(days=days - 1)
+    if config.DEMO_MODE:
+        try:
+            # Keep the fixed demo day visible even if the demo runs later.
+            cutoff_date = min(cutoff_date, date.fromisoformat(config.DEMO_DATE))
+        except ValueError:
+            pass
+    cutoff = cutoff_date.isoformat()
     with get_conn() as conn:
         return conn.execute(
             """SELECT * FROM logs
@@ -618,6 +625,15 @@ def export_user_data(user_id: str) -> dict:
     }
 
 
+def reset_database() -> None:
+    """Delete the local SQLite file. The next app run re-seeds the demo."""
+    try:
+        if config.DB_PATH.exists():
+            config.DB_PATH.unlink()
+    except OSError:
+        pass
+
+
 def delete_all_user_data(user_id: str) -> None:
     with get_conn() as conn:
         post_ids = [
@@ -693,7 +709,8 @@ def seed_demo_data() -> None:
     init_db()
     with get_conn() as conn:
         already = conn.execute("SELECT 1 FROM meta WHERE key = 'demo_seeded'").fetchone()
-    if already:
+        demo_exists = conn.execute("SELECT 1 FROM users WHERE id = ?", (DEMO_USER_ID,)).fetchone()
+    if already and demo_exists:
         return
 
     _upsert_school(
@@ -702,6 +719,7 @@ def seed_demo_data() -> None:
         config.DEMO_OFFICE_CODE,
         config.REGION,
     )
+    # Ensure the demo accounts exist. Content is seeded only once.
     create_user(
         "고2_기하러_0503",
         config.DEMO_GRADE,
@@ -712,6 +730,9 @@ def seed_demo_data() -> None:
     create_user("고2_미분러_0217", 2, "2", "이과", user_id=FRIEND_USER_ID)
     for user_id, nickname, grade, class_no, track in _SEED_USERS:
         create_user(nickname, grade, class_no, track, user_id=user_id)
+
+    if already:
+        return
 
     with get_conn() as conn:
         post_count = conn.execute("SELECT COUNT(*) AS c FROM posts").fetchone()["c"]

@@ -95,13 +95,17 @@ def weekly_summary(total_logs: int, subjects: int, stuck_top: list[tuple[str, in
     """Return a 3-sentence private weekly summary."""
     if total_logs <= 0:
         return "이번 주 기록이 아직 없습니다. 수업 직후 한 줄부터 남겨보세요."
+    safe_top = [
+        (privacy.strip_pii(name, school_name=config.DEMO_SCHOOL_NAME), count)
+        for name, count in stuck_top[:3]
+    ]
     result = _call(
         "너는 학생의 주간 학습 기록을 3문장 이내로 정리하는 도우미다. "
         "칭찬은 1문장만, 나머지는 관찰과 다음 행동 제안에 써라. "
         "성적이나 등수를 언급하지 마라.",
         (
             f"기록 수: {total_logs}\n과목 수: {subjects}\n"
-            f"막힘 상위: {', '.join(f'{name}({count})' for name, count in stuck_top[:3])}"
+            f"막힘 상위: {', '.join(f'{name}({count})' for name, count in safe_top)}"
         ),
         max_tokens=160,
     )

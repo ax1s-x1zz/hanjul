@@ -54,6 +54,19 @@ def render(user) -> None:
             st.toast("데이터를 삭제했습니다.")
             st.rerun()
 
+    with st.expander("데모 데이터 초기화 (개발용)"):
+        st.warning("로컬 DB를 삭제하고 시드부터 다시 시작합니다. 모든 기록이 사라집니다.")
+        reset_confirmed = st.checkbox("초기화합니다", key="reset-confirm")
+        if st.button(
+            "데모 데이터 초기화",
+            type="primary",
+            disabled=not reset_confirmed,
+            use_container_width=True,
+        ):
+            db.reset_database()
+            st.session_state.clear()
+            st.rerun()
+
     st.markdown("#### AI 상태")
     if config.OPENAI_API_KEY:
         st.success(f"AI 보조 사용 가능 · {config.OPENAI_MODEL}")

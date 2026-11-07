@@ -108,10 +108,14 @@ def _request(service: str, params: dict[str, Any]) -> dict:
         response = requests.get(f"{BASE_URL}/{service}", params=query, timeout=10)
         response.raise_for_status()
         return response.json()
-    except requests.RequestException as exc:
-        raise NeisError(f"NEIS 요청 실패: {exc}") from exc
-    except ValueError as exc:
-        raise NeisError("NEIS 응답을 해석할 수 없습니다.") from exc
+    except requests.HTTPError as exc:
+        status = exc.response.status_code if exc.response is not None else "?"
+        # Never include the request URL here: it contains the API key.
+        raise NeisError(f"NEIS 응답 오류({status})") from exc
+    except requests.RequestException:
+        raise NeisError("NEIS 연결에 실패했습니다. 잠시 후 다시 시도해주세요.") from None
+    except ValueError:
+        raise NeisError("NEIS 응답을 해석할 수 없습니다.") from None
 
 
 def fetch_schools(name: str, office_code: str | None = None) -> list[dict]:

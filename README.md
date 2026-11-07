@@ -36,8 +36,11 @@ npm start
 - 실제 라우팅(`/today`, `/feed`, `/report`, `/recall`, `/settings`)
 - **진짜 바텀시트** 기록 UI · 페이지 전환 · 즉각 상태 반영
 - 데모는 localStorage 시드로 동작 (Supabase 키 없이 가능)
-- Supabase 스키마·RLS: [`web/supabase/schema.sql`](./web/supabase/schema.sql)
+- Supabase 키를 넣으면 **Google/카카오/이메일 로그인 + Postgres/RLS**로 자동 전환
+- `middleware.ts`가 `/today`·`/feed`·`/report`·`/recall`·`/settings` 보호
+- Supabase 스키마·RLS·신고 RPC: [`web/supabase/schema.sql`](./web/supabase/schema.sql)
 - NEIS 프록시: `GET /api/neis/timetable?date=2026-11-03&grade=2&class=5`
+- 환경 변수: `web/.env.example` → `web/.env.local`
 
 ---
 

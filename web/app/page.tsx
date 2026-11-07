@@ -2,11 +2,11 @@
 
 import { useRouter } from "next/navigation";
 
+import { ClockIcon, LockIcon, PinIcon } from "@/components/icons";
 import { PhoneShell } from "@/components/phone-shell";
 import { Button } from "@/components/ui";
 import { useDemo } from "@/lib/demo-store";
-import { DEMO_SCHOOL, DEMO_REGION } from "@/lib/seed";
-import { ClockIcon, LockIcon, PinIcon } from "@/components/icons";
+import { DEMO_REGION, DEMO_SCHOOL } from "@/lib/seed";
 
 const FEATURES = [
   {
@@ -28,12 +28,13 @@ const FEATURES = [
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { switchUser, notify } = useDemo();
+  const { mode, switchUser, notify } = useDemo();
+  const isSupabase = mode === "supabase";
 
-  function start(userId: string, message: string) {
-    switchUser(userId);
+  async function start(userId: string, message: string) {
+    await switchUser(userId);
     notify(message);
-    window.setTimeout(() => router.push("/today"), 80);
+    router.push("/today");
   }
 
   return (
@@ -64,24 +65,47 @@ export default function OnboardingPage() {
         </div>
 
         <div className="onboarding-actions">
-          <Button
-            variant="primary"
-            block
-            onClick={() => start("demo-main", "데모 계정으로 시작합니다.")}
-          >
-            데모로 시작하기
-          </Button>
-          <Button block onClick={() => start("demo-friend", "친구 계정으로 전환했습니다.")}>
-            친구 계정으로 체험하기
-          </Button>
+          {isSupabase ? (
+            <>
+              <Button
+                variant="primary"
+                block
+                onClick={() => router.push("/login")}
+              >
+                로그인
+              </Button>
+              <Button block onClick={() => router.push("/login")}>
+                처음이신가요? 계정 만들기
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="primary"
+                block
+                onClick={() => void start("demo-main", "데모 계정으로 시작합니다.")}
+              >
+                데모로 시작하기
+              </Button>
+              <Button
+                block
+                onClick={() =>
+                  void start("demo-friend", "친구 계정으로 전환했습니다.")
+                }
+              >
+                친구 계정으로 체험하기
+              </Button>
+            </>
+          )}
         </div>
 
         <p className="helper" style={{ marginTop: 14 }}>
           {DEMO_SCHOOL} 2학년 5반 · {DEMO_REGION}
         </p>
         <p className="helper">
-          실명·전화번호·주소·사진은 저장하지 않습니다. 데모 데이터는 이 브라우저에만
-          저장됩니다.
+          {isSupabase
+            ? "로그인하면 자동 닉네임이 생성됩니다. 실명·전화번호·주소·사진은 저장하지 않습니다."
+            : "실명·전화번호·주소·사진은 저장하지 않습니다. 데모 데이터는 이 브라우저에만 저장됩니다."}
         </p>
       </div>
     </PhoneShell>

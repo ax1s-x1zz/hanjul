@@ -7,19 +7,34 @@ import { useDemo } from "@/lib/demo-store";
 import { DEMO_REGION } from "@/lib/seed";
 import { userInitial } from "@/lib/utils";
 
-
 type Confirm = "delete" | "reset" | null;
 
 export default function SettingsPage() {
-  const { state, switchUser, exportData, deleteMyData, resetDemo } = useDemo();
+  const {
+    state,
+    mode,
+    switchUser,
+    exportData,
+    deleteMyData,
+    resetDemo,
+    signOut,
+  } = useDemo();
   const [confirm, setConfirm] = useState<Confirm>(null);
-  const supabaseEnabled = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const isDemo = mode === "demo";
   const demoUsers = state.users.filter(
     (user) => user.id === "demo-main" || user.id === "demo-friend",
   );
 
   const confirmTitle =
-    confirm === "delete" ? "내 데이터를 모두 삭제할까요?" : "데모 데이터를 초기화할까요?";
+    confirm === "delete"
+      ? "내 데이터를 모두 삭제할까요?"
+      : "데모 데이터를 초기화할까요?";
+
+  async function runConfirm() {
+    if (confirm === "delete") await deleteMyData();
+    if (confirm === "reset") await resetDemo();
+    setConfirm(null);
+  }
 
   return (
     <div className="page">
@@ -37,45 +52,71 @@ export default function SettingsPage() {
 
       <Section>계정</Section>
       <div className="group">
-        {demoUsers.map((user) => {
-          const active = user.id === state.user.id;
-          return (
-            <button
-              type="button"
-              className="list-row"
-              key={user.id}
-              onClick={() => switchUser(user.id)}
-            >
-              <div className="row-main">
-                <div className="row-title">
-                  {user.id === "demo-main" ? "나" : "친구"} · {user.grade}학년{" "}
-                  {user.classNo}반
+        {isDemo ? (
+          demoUsers.map((user) => {
+            const active = user.id === state.user.id;
+            return (
+              <button
+                type="button"
+                className="list-row"
+                key={user.id}
+                onClick={() => void switchUser(user.id)}
+              >
+                <div className="row-main">
+                  <div className="row-title">
+                    {user.id === "demo-main" ? "나" : "친구"} · {user.grade}학년{" "}
+                    {user.classNo}반
+                  </div>
+                  <div className="row-sub">{user.nickname}</div>
                 </div>
-                <div className="row-sub">{user.nickname}</div>
-              </div>
-              {active ? <span className="pill">현재</span> : <span className="row-action">›</span>}
-            </button>
-          );
-        })}
+                {active ? (
+                  <span className="pill">현재</span>
+                ) : (
+                  <span className="row-action">›</span>
+                )}
+              </button>
+            );
+          })
+        ) : (
+          <button
+            type="button"
+            className="settings-link"
+            onClick={() => void signOut()}
+          >
+            로그아웃
+          </button>
+        )}
       </div>
 
       <Section>데이터</Section>
-      <button type="button" className="settings-link" onClick={exportData}>
+      <button
+        type="button"
+        className="settings-link"
+        onClick={() => void exportData()}
+      >
         내 기록 내보내기
       </button>
-      <button type="button" className="settings-link" onClick={() => setConfirm("delete")}>
+      <button
+        type="button"
+        className="settings-link"
+        onClick={() => setConfirm("delete")}
+      >
         내 데이터 모두 삭제
       </button>
-      <button type="button" className="settings-link" onClick={() => setConfirm("reset")}>
-        데모 데이터 초기화
-      </button>
+      {isDemo ? (
+        <button
+          type="button"
+          className="settings-link"
+          onClick={() => setConfirm("reset")}
+        >
+          데모 데이터 초기화
+        </button>
+      ) : null}
 
       <Section>정보</Section>
       <div className="info-row" style={{ marginBottom: 6 }}>
-        <span className="dot on" />
-        <span>
-          {supabaseEnabled ? "Supabase 연결됨" : "데모 모드 · 브라우저 저장"}
-        </span>
+        <span className={isDemo ? "dot" : "dot on"} />
+        <span>{isDemo ? "데모 모드 · 브라우저 저장" : "Supabase 연결됨"}</span>
       </div>
       <div className="info-row">
         <span className="dot" />
@@ -93,7 +134,7 @@ export default function SettingsPage() {
         title={confirmTitle}
         sub={
           confirm === "delete"
-            ? "기록·공개 글·복습 카드가 이 브라우저에서 삭제됩니다."
+            ? "기록·공개 글·복습 카드가 삭제됩니다."
             : "시드 데이터로 되돌립니다. 현재 기록은 사라집니다."
         }
       >
@@ -104,11 +145,7 @@ export default function SettingsPage() {
           <Button
             type="button"
             variant="primary"
-            onClick={() => {
-              if (confirm === "delete") deleteMyData();
-              if (confirm === "reset") resetDemo();
-              setConfirm(null);
-            }}
+            onClick={() => void runConfirm()}
           >
             {confirm === "delete" ? "삭제" : "초기화"}
           </Button>

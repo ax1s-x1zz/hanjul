@@ -160,3 +160,29 @@ create policy "reports_select_own" on public.reports
 
 create policy "recall_own_all" on public.recall_queue
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+
+-- ---------------------------------------------------------------------------
+-- Report RPC: insert a report and hide after 3 reports atomically.
+-- ---------------------------------------------------------------------------
+create or replace function public.report_post(p_post_id uuid)
+returns void
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  insert into public.reports (post_id, reporter_id, reason)
+  values (p_post_id, auth.uid(), '신고');
+
+  update public.posts
+  set reports = reports + 1,
+      status = case when reports + 1 >= 3 then 'hidden' else status end
+  where id = p_post_id;
+end;
+$$;
+
+grant execute on function public.report_post(uuid) to authenticated;
+
+-- Allow first-login profile bootstrap from the client as well as the trigger.
+create policy "profiles_insert_own" on public.profiles
+  for insert with check (auth.uid() = id);

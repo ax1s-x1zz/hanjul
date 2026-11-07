@@ -56,9 +56,21 @@ NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ```
 
-- `supabase/schema.sql`에는 `profiles`, `logs`, `posts`, `reactions`, `reports`, `recall_queue`와 **RLS 정책**이 포함되어 있습니다.
+- `lib/demo-store.tsx`는 **이중 모드**입니다.
+  - 키가 있으면 Supabase Auth/DB/RLS 사용
+  - 키가 없으면 localStorage 데모 모드
 - `logs`는 본인만, `posts`는 공개 글만 읽을 수 있습니다.
-- 현재 UI는 **데모 스토어**를 사용합니다. 실서비스 전환 시 `lib/demo-store.tsx`의 액션을 Supabase 쿼리로 교체하면 됩니다.
+- `report_post` RPC가 신고 3회 누적 시 글을 숨깁니다.
+
+### Auth
+
+- `/login`: Google · 카카오 · 이메일 매직 링크
+- `/auth/callback`: OAuth code exchange
+- `middleware.ts`: `/today`, `/feed`, `/report`, `/recall`, `/settings` 보호
+- Supabase Dashboard → Authentication → Providers에서 Google/Kakao 활성화
+- Redirect URL 등록:
+  - `http://localhost:3000/auth/callback`
+  - `https://<your-domain>/auth/callback`
 
 ---
 

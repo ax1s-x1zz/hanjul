@@ -1,11 +1,3 @@
-@font-face {
-  font-family: "Pretendard";
-  src: url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/woff2/PretendardVariable.woff2")
-    format("woff2-variations");
-  font-weight: 45 920;
-  font-display: swap;
-}
-
 :root {
   --bg: #e7e7ed;
   --screen: #f7f7fa;
@@ -690,6 +682,26 @@ a {
 /* Onboarding                                                          */
 /* ------------------------------------------------------------------ */
 .onboarding-screen { padding: 0; }
+.login-screen { padding: 0; }
+.login-body { padding: 34px 24px 24px; }
+.login-title { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.06em; margin: 18px 0 0; }
+.login-sub { font-size: 0.82rem; color: var(--muted); line-height: 1.55; margin: 8px 0 0; }
+.login-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 26px; }
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--tertiary);
+  font-size: 0.68rem;
+  margin: 18px 0 8px;
+}
+.login-divider::before,
+.login-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
 .onboarding-hero {
   padding: 42px 24px 26px;
   background: #f1eeff;

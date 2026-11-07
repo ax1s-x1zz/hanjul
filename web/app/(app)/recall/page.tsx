@@ -55,14 +55,14 @@ export default function RecallPage() {
                   type="button"
                   variant="soft"
                   className="btn-small"
-                  onClick={() => reviewRecall(item.id, 5)}
+                  onClick={() => void reviewRecall(item.id, 5)}
                 >
                   기억남
                 </Button>
                 <Button
                   type="button"
                   className="btn-small"
-                  onClick={() => reviewRecall(item.id, 2)}
+                  onClick={() => void reviewRecall(item.id, 2)}
                 >
                   헷갈림
                 </Button>

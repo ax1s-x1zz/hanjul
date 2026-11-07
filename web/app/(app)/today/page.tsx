@@ -48,7 +48,7 @@ export default function TodayPage() {
     setEditing(null);
   }
 
-  function submit() {
+  async function submit() {
     if (!editing) return;
     const trimmed = learned.trim();
     if (!trimmed) {
@@ -60,7 +60,7 @@ export default function TodayPage() {
       return;
     }
 
-    const log = saveLog({
+    const log = await saveLog({
       date: selectedDay,
       period: editing.period,
       subject: normalizeSubject(editing.subject),
@@ -69,6 +69,7 @@ export default function TodayPage() {
       stuck: stuck.trim(),
       isPublic,
     });
+    if (!log) return;
 
     if (isPublic) {
       const { clean, changed } = sanitizeForPublic(trimmed);
@@ -76,10 +77,10 @@ export default function TodayPage() {
         notify("공개할 수 있는 내용이 없습니다.");
         return;
       }
-      publishPost(log, clean, ruleBasedTags(trimmed, editing.subject));
+      await publishPost(log, clean, ruleBasedTags(trimmed, editing.subject));
       notify(changed ? "개인정보를 가려 게시했습니다." : "광명 피드에 게시했습니다.");
     } else {
-      unpublish(log.id);
+      await unpublish(log.id);
       notify("저장했습니다. 상세 기록은 나만 볼 수 있습니다.");
     }
     close();
@@ -235,7 +236,7 @@ export default function TodayPage() {
           <Button type="button" onClick={close}>
             취소
           </Button>
-          <Button type="button" variant="primary" onClick={submit}>
+          <Button type="button" variant="primary" onClick={() => void submit()}>
             저장
           </Button>
         </div>

@@ -8,7 +8,7 @@ import { useDemo } from "@/lib/demo-store";
 import { subjectShort, timeAgo, userInitial } from "@/lib/utils";
 
 export default function FeedPage() {
-  const { state, toggleCheer, reportPost, notify } = useDemo();
+  const { state, toggleCheer, reportPost } = useDemo();
   const [subject, setSubject] = useState("전체");
 
   const visible = state.posts.filter((post) => !post.hidden);
@@ -74,7 +74,7 @@ export default function FeedPage() {
                 <button
                   type="button"
                   className={active ? "heart-btn active" : "heart-btn"}
-                  onClick={() => toggleCheer(post.id)}
+                  onClick={() => void toggleCheer(post.id)}
                   aria-pressed={active}
                 >
                   <HeartIcon fill={active ? "currentColor" : "none"} />
@@ -83,10 +83,7 @@ export default function FeedPage() {
                 <button
                   type="button"
                   className="more-btn"
-                  onClick={() => {
-                    reportPost(post.id);
-                    notify("신고가 접수되었습니다.");
-                  }}
+                  onClick={() => void reportPost(post.id)}
                   aria-label="신고"
                 >
                   ···

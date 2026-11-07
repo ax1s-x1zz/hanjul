@@ -737,7 +737,7 @@ a {
 }
 .chip.active { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent); }
 
-.week-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+.week-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
 .week-day {
   height: 44px;
   border-radius: 12px;
@@ -928,6 +928,27 @@ a {
 .feature b { font-size: 0.84rem; font-weight: 700; }
 .feature p { font-size: 0.72rem; color: var(--muted); margin: 2px 0 0; line-height: 1.4; }
 .onboarding-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; }
+.demo-guide {
+  margin-top: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 14px;
+}
+.demo-guide summary {
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+.demo-guide ol {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.demo-guide li { margin: 2px 0; }
 
 /* ------------------------------------------------------------------ */
 /* Settings                                                            */

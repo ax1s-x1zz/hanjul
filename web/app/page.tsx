@@ -28,10 +28,11 @@ const FEATURES = [
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { mode, switchUser, notify } = useDemo();
+  const { mode, switchUser, resetDemo, notify } = useDemo();
   const isSupabase = mode === "supabase";
 
   async function start(userId: string, message: string) {
+    await resetDemo();
     await switchUser(userId);
     notify(message);
     router.push("/today");
@@ -99,8 +100,19 @@ export default function OnboardingPage() {
           )}
         </div>
 
+        {!isSupabase ? (
+          <details className="demo-guide">
+            <summary>3분 데모 순서</summary>
+            <ol>
+              <li>오늘 5교시 기록 → 공개</li>
+              <li>오늘의 질문 답하기</li>
+              <li>리콜 → 3분 플랜 3개 완료</li>
+            </ol>
+          </details>
+        ) : null}
+
         <p className="helper" style={{ marginTop: 14 }}>
-          {DEMO_SCHOOL} 2학년 5반 · {DEMO_REGION}
+          {DEMO_SCHOOL} 2학년 5반 · {DEMO_REGION} · 데모 데이터
         </p>
         <p className="helper">
           {isSupabase

@@ -8,7 +8,7 @@ import { useDemo } from "@/lib/demo-store";
 import { subjectShort, timeAgo, userInitial } from "@/lib/utils";
 
 export default function FeedPage() {
-  const { state, toggleCheer, reportPost } = useDemo();
+  const { state, mode, toggleCheer, reportPost } = useDemo();
   const [subject, setSubject] = useState("전체");
 
   const visible = state.posts.filter((post) => !post.hidden);
@@ -23,6 +23,7 @@ export default function FeedPage() {
   return (
     <div className="page">
       <p className="helper">
+        {mode === "demo" ? "데모 피드 · " : ""}
         공개한 한 줄만 보입니다. 학교명·실명은 표시되지 않습니다.
       </p>
 

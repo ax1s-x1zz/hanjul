@@ -1,17 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { DailyQuestion } from "@/components/daily-question";
 import { Button, Chip, Empty, Sheet } from "@/components/ui";
 import { useDemo } from "@/lib/demo-store";
 import { containsProfanity, ruleBasedTags, sanitizeForPublic } from "@/lib/privacy";
-import { DEMO_DATE, DEMO_SCHOOL, TIMETABLE } from "@/lib/seed";
+import { DEMO_SCHOOL, TIMETABLE } from "@/lib/seed";
 import type { Activity, Period } from "@/lib/types";
 import {
   formatKoreanDate,
   normalizeSubject,
   shortWeekday,
+  todayISO,
   weekDays,
 } from "@/lib/utils";
 
@@ -19,15 +20,21 @@ const ACTIVITIES: Activity[] = ["들음", "필기", "문제풀이", "질문", "�
 
 export default function TodayPage() {
   const { state, saveLog, publishPost, unpublish, notify } = useDemo();
-  const [selectedDay, setSelectedDay] = useState(DEMO_DATE);
+  const demoDay = todayISO();
+  const [selectedDay, setSelectedDay] = useState(demoDay);
   const [editing, setEditing] = useState<Period | null>(null);
   const [learned, setLearned] = useState("");
   const [activity, setActivity] = useState<Activity>("들음");
   const [stuck, setStuck] = useState("");
   const [isPublic, setIsPublic] = useState(false);
 
+  useEffect(() => {
+    // Keep the demo anchored to the runtime date even after a static build.
+    setSelectedDay(todayISO());
+  }, []);
+
   const week = useMemo(() => weekDays(selectedDay), [selectedDay]);
-  const periods = selectedDay === DEMO_DATE ? TIMETABLE : [];
+  const periods = selectedDay === demoDay ? TIMETABLE : [];
   const dayLogs = state.logs.filter(
     (log) => log.userId === state.user.id && log.date === selectedDay,
   );
@@ -92,10 +99,10 @@ export default function TodayPage() {
       <div className="date-head">
         <div className="date-title">
           {formatKoreanDate(selectedDay)}
-          {selectedDay === DEMO_DATE ? <span className="pill">DEMO</span> : null}
+          {selectedDay === demoDay ? <span className="pill">DEMO</span> : null}
         </div>
         <div className="date-sub">
-          고{state.user.grade} · {state.user.classNo}반 · {DEMO_SCHOOL}
+          고{state.user.grade} · {state.user.classNo}반 · {DEMO_SCHOOL} · 데모 시간표
         </div>
       </div>
 

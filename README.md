@@ -39,7 +39,7 @@ npm start
 - Supabase 키를 넣으면 **Google/카카오/이메일 로그인 + Postgres/RLS**로 자동 전환
 - `middleware.ts`가 `/today`·`/feed`·`/report`·`/recall`·`/settings` 보호
 - Supabase 스키마·RLS·신고 RPC: [`web/supabase/schema.sql`](./web/supabase/schema.sql)
-- NEIS 프록시: `GET /api/neis/timetable?date=2026-11-03&grade=2&class=5`
+- NEIS 프록시: `GET /api/neis/timetable?date=YYYY-MM-DD&grade=2&class=5`
 - 환경 변수: `web/.env.example` → `web/.env.local`
 - Supabase 처음 설정: [`web/SUPABASE_SETUP.md`](./web/SUPABASE_SETUP.md) (익명 로그인 10분 가이드)
 
@@ -59,7 +59,7 @@ npm start
 
 > **DB 연결은 미뤄도 됩니다. 학생에게 중요한 건 “기록이 쌓여서 무엇이 돌아오나”입니다.**
 
-- **오늘의 질문** (`/today`): 6일 전 막힌 개념을 3문장으로 설명 → 저장·복습
+- **오늘의 질문** (`/today`): 2일 전 막힌 개념을 3문장으로 설명 → 저장·복습
 - **시험 준비도** (`/recall`): 기록 커버리지 + 복습 신뢰도 + 막힘 해결 → 0~100 추정치
 - **3분 플랜** (`/recall`): 준비도·취약 개념으로 오늘 복습할 3개를 제시
 - **지식 지도** (`/report` → 지식 지도): 개념이 `막힘 → 복습 중 → 이해`로 색이 바뀜
@@ -73,7 +73,7 @@ npm start
 
 | 시간 | 장면 | 확인할 것 |
 |---|---|---|
-| 0:00 | 온보딩에서 “데모로 시작하기 · 2학년 5반” | 11/3(화) 실제 7교시 시간표 자동 로드 |
+| 0:00 | 온보딩에서 “데모로 시작하기 · 2학년 5반” | 실행일 기준 데모 시간표 7교시 자동 로드 |
 | 0:30 | 5교시 영어Ⅱ “기록” 클릭 | 시간표가 과목을 자동으로 채움 |
 | 0:50 | 한 줄 + 막힘 입력 → 공개 토글 ON → 저장 | 개인정보 살균 미리보기 |
 | 1:10 | “광명 피드에 게시” | 피드 카드 등장 |
@@ -103,6 +103,10 @@ npm start
 | 지역 막힘 TOP | ✅ | 익명 집계, **k≥5** 일 때만 노출 |
 | 시험 D-day 리콜 | ✅ | 학사일정 연동, 없으면 데모 일정 표시 |
 | SM-2 간격 반복 | ✅ | 기억남(5)/헷갈림(2) |
+| **오늘의 질문 (web)** | ✅ | 기록에서 매일 1개 질문 → 3문장 설명 저장 |
+| **시험 준비도 (web)** | ✅ | 기록 커버리지·복습 신뢰도·막힘 해결 → 0~100 |
+| **3분 플랜 (web)** | ✅ | 취약 개념 3개를 1/3~3/3으로 복습 |
+| **지식 지도 (web)** | ✅ | 막힘 → 복습 중 → 이해 색 변화 |
 | 익명 프로필 | ✅ | 자동 닉네임, 학교·실명 미노출 |
 | 데이터 내보내기/삭제 | ✅ | JSON 다운로드, 전체 삭제 |
 | AI 보조 | ⚙️ | OpenAI 키가 있으면 태그·요약, 없으면 규칙 기반 |
@@ -111,11 +115,11 @@ npm start
 
 ## 기술 스택
 
-- **UI**: Streamlit (Python 단일 스택)
-- **DB**: SQLite (`data/hanjul.db`, gitignore)
+- **제품용 웹 (`web/`)**: Next.js 15 · React 19 · TypeScript · Supabase (선택)
+- **프로토타입 (루트)**: Streamlit · SQLite (`data/hanjul.db`, gitignore)
 - **데이터**: NEIS 교육정보 개방 포털 (`schoolInfo`, `hisTimetable`, `SchoolSchedule`)
 - **AI**: OpenAI `gpt-4o-mini` (선택)
-- **테스트**: pytest (19 tests)
+- **테스트**: pytest 19 tests · `next build`
 
 ---
 

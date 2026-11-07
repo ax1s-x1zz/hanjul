@@ -48,7 +48,7 @@ export function weekDays(base: string): string[] {
   const mondayOffset = day === 0 ? -6 : 1 - day;
   const monday = new Date(d);
   monday.setDate(d.getDate() + mondayOffset);
-  return Array.from({ length: 5 }, (_, index) => {
+  return Array.from({ length: 7 }, (_, index) => {
     const current = new Date(monday);
     current.setDate(monday.getDate() + index);
     return dateISO(current);

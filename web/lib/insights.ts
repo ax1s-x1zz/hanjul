@@ -1,6 +1,5 @@
-import { DEMO_EXAM } from "./seed";
 import type { DemoState } from "./types";
-import { daysUntil, parseISO, todayISO } from "./utils";
+import { addDays, daysUntil, parseISO, todayISO } from "./utils";
 
 export interface ReadinessComponent {
   key: string;
@@ -76,11 +75,12 @@ export function computeReadiness(state: DemoState): Readiness {
       };
     });
 
+  const examDate = addDays(todayISO(), 37);
   return {
     score,
-    days: daysUntil(DEMO_EXAM.date),
-    examName: DEMO_EXAM.name,
-    examDate: DEMO_EXAM.date,
+    days: daysUntil(examDate),
+    examName: "2학기 기말고사",
+    examDate,
     components: [
       {
         key: "coverage",

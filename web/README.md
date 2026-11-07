@@ -20,7 +20,7 @@ npm run dev
 ```
 
 - 첫 화면: `/` 온보딩 → **데모로 시작하기**
-- 데모 데이터: 진성고 2학년 5반 · 2026-11-03(화) 실제 7교시
+- 데모 데이터: 진성고 2학년 5반 · **실행일 기준 상대 시드** · 데모 시간표 7교시
 - 모든 기록은 **브라우저 localStorage**에 저장됩니다 (서버 DB 없이 동작).
 
 ### 빌드
@@ -89,7 +89,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 
 ## NEIS 연동
 
-- 서버 Route: `GET /api/neis/timetable?date=2026-11-03&grade=2&class=5`
+- 서버 Route: `GET /api/neis/timetable?date=YYYY-MM-DD&grade=2&class=5`
 - `.env.local`에 `NEIS_KEY`를 넣으면 실제 시간표를 반환합니다.
 - 키가 없으면 데모 시간표(`lib/seed.ts`)를 사용합니다.
 - 브라우저에 키를 노출하지 않도록 **서버에서만** 호출합니다.

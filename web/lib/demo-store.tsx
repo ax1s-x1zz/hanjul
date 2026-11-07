@@ -143,6 +143,9 @@ export function DemoProvider({ children }: { children: ReactNode }) {
             if (parsed?.user?.id && parsed?.users?.length && !cancelled) {
               setState(parsed);
             }
+          } else {
+            // Recompute relative dates at runtime (never use the build date).
+            setState(seedState());
           }
         } catch {
           // ignore corrupt demo state
@@ -635,6 +638,9 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     }
     try {
       window.localStorage.removeItem(STORAGE_KEY);
+      Object.keys(window.localStorage)
+        .filter((key) => key.startsWith("hanjul-question-"))
+        .forEach((key) => window.localStorage.removeItem(key));
     } catch {
       // ignore
     }

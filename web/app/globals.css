@@ -795,6 +795,12 @@ a {
   line-height: 1.55;
   margin: 6px 0 14px;
 }
+.event-card {
+  background: #fffaf0;
+  border-color: #f0ddb8;
+}
+.event-card .holiday-eyebrow { color: #b7791f; }
+.event-card .holiday-sub { margin-bottom: 0; }
 
 .segmented {
   display: grid;

@@ -13,7 +13,7 @@ import {
 } from "react";
 
 import { sm2 } from "./recall";
-import { DEMO_REGION, seedState } from "./seed";
+import { DEMO_ANCHOR, DEMO_REGION, guestState, seedState } from "./seed";
 import { isSupabaseEnabled } from "./supabase/config";
 import { getSupabaseBrowser } from "./supabase/client";
 import type { DemoState, LogEntry, Post, RecallItem, User } from "./types";
@@ -49,6 +49,7 @@ interface DemoContextValue {
   reportPost: (postId: string) => Promise<void>;
   reviewRecall: (itemId: string, quality: number) => Promise<void>;
   resetDemo: () => Promise<void>;
+  startGuest: () => Promise<void>;
   deleteMyData: () => Promise<void>;
   exportData: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -141,7 +142,11 @@ export function DemoProvider({ children }: { children: ReactNode }) {
           if (raw) {
             const parsed = JSON.parse(raw) as DemoState;
             if (parsed?.user?.id && parsed?.users?.length && !cancelled) {
-              setState(parsed);
+              // 기존 데모 저장값에는 기준일이 없으므로 이번 주 수업일로 보정.
+              setState({
+                ...parsed,
+                referenceDate: parsed.referenceDate ?? DEMO_ANCHOR,
+              });
             }
           } else {
             // Recompute relative dates at runtime (never use the build date).
@@ -649,6 +654,24 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     notify("데모 데이터를 초기화했습니다.");
   }, [notify]);
 
+  const startGuest = useCallback(async () => {
+    if (MODE !== "demo") {
+      notify("게스트 모드는 데모에서만 사용할 수 있습니다.");
+      return;
+    }
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+      Object.keys(window.localStorage)
+        .filter((key) => key.startsWith("hanjul-question-"))
+        .forEach((key) => window.localStorage.removeItem(key));
+    } catch {
+      // ignore
+    }
+    setState(guestState());
+    setAuthenticated(true);
+    notify("게스트로 시작합니다. 기록은 이 브라우저에만 저장됩니다.");
+  }, [notify]);
+
   const deleteMyData = useCallback(async () => {
     const supabase = await getSupabaseBrowser();
     if (MODE === "demo" || !supabase) {
@@ -706,6 +729,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       reportPost,
       reviewRecall,
       resetDemo,
+      startGuest,
       deleteMyData,
       exportData,
       signOut,
@@ -724,6 +748,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       reportPost,
       reviewRecall,
       resetDemo,
+      startGuest,
       deleteMyData,
       exportData,
       signOut,

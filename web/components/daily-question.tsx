@@ -7,11 +7,11 @@ import { useDemo } from "@/lib/demo-store";
 import { pickDailyQuestion, type DailyQuestion as DailyQuestionData } from "@/lib/insights";
 import { todayISO } from "@/lib/utils";
 
-const CHOICE_KEY = `hanjul-question-choice-${todayISO()}`;
-const ANSWER_PREFIX = `hanjul-question-answer-${todayISO()}-`;
-
 export function DailyQuestion() {
   const { state, ready, reviewRecall, notify } = useDemo();
+  const reference = state.referenceDate ?? todayISO();
+  const choiceKey = `hanjul-question-choice-${reference}`;
+  const answerPrefix = `hanjul-question-answer-${reference}-`;
   const [question, setQuestion] = useState<DailyQuestionData | null>(null);
   const [open, setOpen] = useState(false);
   const [answer, setAnswer] = useState("");
@@ -20,7 +20,7 @@ export function DailyQuestion() {
   useEffect(() => {
     if (!ready) return;
     try {
-      const stored = window.localStorage.getItem(CHOICE_KEY);
+      const stored = window.localStorage.getItem(choiceKey);
       if (stored) {
         setQuestion(JSON.parse(stored) as DailyQuestionData);
         return;
@@ -32,22 +32,22 @@ export function DailyQuestion() {
     setQuestion(picked);
     if (picked) {
       try {
-        window.localStorage.setItem(CHOICE_KEY, JSON.stringify(picked));
+        window.localStorage.setItem(choiceKey, JSON.stringify(picked));
       } catch {
         // ignore
       }
     }
-  }, [ready, state]);
+  }, [ready, state, choiceKey]);
 
   useEffect(() => {
     if (!question) return;
     try {
-      const value = window.localStorage.getItem(`${ANSWER_PREFIX}${question.concept}`);
+      const value = window.localStorage.getItem(`${answerPrefix}${question.concept}`);
       setSaved(value ?? "");
     } catch {
       setSaved("");
     }
-  }, [question]);
+  }, [question, answerPrefix]);
 
   function openSheet() {
     setAnswer(saved);
@@ -65,7 +65,7 @@ export function DailyQuestion() {
       await reviewRecall(question.recallId, quality);
     }
     try {
-      window.localStorage.setItem(`${ANSWER_PREFIX}${question.concept}`, text);
+      window.localStorage.setItem(`${answerPrefix}${question.concept}`, text);
     } catch {
       // ignore
     }

@@ -60,6 +60,28 @@ export async function GET(request: Request) {
     );
   }
 
+  const isTripDay =
+    periods.length > 0 &&
+    periods.every((period) => /현장체험|수학여행|체험학습/.test(period.subject));
+
+  if (isTripDay) {
+    return NextResponse.json(
+      {
+        date,
+        school: DEMO_SCHOOL,
+        source: "neis",
+        periods: [],
+        event: periods[0].subject,
+        message: "이 날은 수업 대신 체험학습 일정입니다.",
+      },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+        },
+      },
+    );
+  }
+
   if (!periods.length) {
     const nearest: NearestSchoolDay | null = await findNextSchoolDay(
       requestParams,

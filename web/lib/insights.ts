@@ -1,5 +1,5 @@
 import type { DemoState } from "./types";
-import { addDays, daysUntil, parseISO, todayISO } from "./utils";
+import { addDays, parseISO, todayISO } from "./utils";
 
 export interface ReadinessComponent {
   key: string;
@@ -42,6 +42,7 @@ export interface KnowledgeMap {
  * It is deliberately not a grade: it measures the habit + recall loop.
  */
 export function computeReadiness(state: DemoState): Readiness {
+  const reference = state.referenceDate ?? todayISO();
   const logs = state.logs.filter((log) => log.userId === state.user.id);
   const recall = state.recall.filter((item) => item.userId === state.user.id);
 
@@ -75,10 +76,13 @@ export function computeReadiness(state: DemoState): Readiness {
       };
     });
 
-  const examDate = addDays(todayISO(), 37);
+  const examDate = addDays(reference, 37);
+  const days = Math.round(
+    (parseISO(examDate).getTime() - parseISO(reference).getTime()) / 86400000,
+  );
   return {
     score,
-    days: daysUntil(examDate),
+    days,
     examName: "2학기 기말고사",
     examDate,
     components: [
@@ -114,6 +118,7 @@ export interface DailyQuestion {
 }
 
 export function pickDailyQuestion(state: DemoState): DailyQuestion | null {
+  const reference = state.referenceDate ?? todayISO();
   const logs = state.logs.filter((log) => log.userId === state.user.id);
   const recall = state.recall.filter((item) => item.userId === state.user.id);
   if (!logs.length && !recall.length) return null;
@@ -144,7 +149,7 @@ export function pickDailyQuestion(state: DemoState): DailyQuestion | null {
     ? Math.max(
         0,
         Math.round(
-          (parseISO(todayISO()).getTime() - parseISO(chosen.log.date).getTime()) /
+          (parseISO(reference).getTime() - parseISO(chosen.log.date).getTime()) /
             86400000,
         ),
       )
@@ -170,7 +175,7 @@ export interface PlanItem {
 export function buildThreeMinutePlan(state: DemoState): PlanItem[] {
   const logs = state.logs.filter((log) => log.userId === state.user.id);
   const recall = state.recall.filter((item) => item.userId === state.user.id);
-  const today = todayISO();
+  const today = state.referenceDate ?? todayISO();
   const due = recall.filter((item) => item.dueDate <= today);
   const ordered = [...due, ...recall].sort(
     (a, b) => a.reps - b.reps || a.dueDate.localeCompare(b.dueDate),

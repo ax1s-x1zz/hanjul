@@ -28,13 +28,18 @@ const FEATURES = [
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { mode, switchUser, resetDemo, notify } = useDemo();
+  const { mode, switchUser, resetDemo, startGuest, notify } = useDemo();
   const isSupabase = mode === "supabase";
 
   async function start(userId: string, message: string) {
     await resetDemo();
     await switchUser(userId);
     notify(message);
+    router.push("/today");
+  }
+
+  async function startAsGuest() {
+    await startGuest();
     router.push("/today");
   }
 
@@ -88,6 +93,12 @@ export default function OnboardingPage() {
               >
                 데모로 시작하기
               </Button>
+              <Button block onClick={() => void startAsGuest()}>
+                게스트로 시작하기
+              </Button>
+              <p className="helper" style={{ margin: "-2px 0 0", textAlign: "center" }}>
+                빈 기록으로 시작합니다. 오늘부터 직접 쌓아보세요.
+              </p>
               <Button
                 block
                 onClick={() =>
@@ -104,8 +115,8 @@ export default function OnboardingPage() {
           <details className="demo-guide">
             <summary>3분 데모 순서</summary>
             <ol>
-              <li>실제 NEIS 시간표 확인 (주말·휴업일은 ‘다음 수업일’ 버튼)</li>
-              <li>오늘 5교시 기록 → 공개</li>
+              <li>이번 주 월·화 NEIS 시간표 (수~금은 수학여행)</li>
+              <li>화요일 5교시 기록 → 공개</li>
               <li>오늘의 질문 답하기</li>
               <li>리콜 → 3분 플랜 3개 완료</li>
             </ol>

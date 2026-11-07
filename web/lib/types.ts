@@ -58,4 +58,6 @@ export interface DemoState {
   logs: LogEntry[];
   posts: Post[];
   recall: RecallItem[];
+  /** 데모 기준일. 없으면 실행일(today)을 사용합니다. */
+  referenceDate?: string;
 }

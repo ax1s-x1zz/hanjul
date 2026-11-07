@@ -24,12 +24,13 @@ interface TimetableResponse {
   source: "neis" | "sample";
   periods: Period[];
   nearest?: { date: string; periods: Period[] };
+  event?: string;
   message?: string;
 }
 
 export default function TodayPage() {
   const { state, saveLog, publishPost, unpublish, notify } = useDemo();
-  const demoDay = todayISO();
+  const demoDay = state.referenceDate ?? todayISO();
   const [selectedDay, setSelectedDay] = useState(demoDay);
   const [timetable, setTimetable] = useState<TimetableResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,9 +41,9 @@ export default function TodayPage() {
   const [isPublic, setIsPublic] = useState(false);
 
   useEffect(() => {
-    // Keep the demo anchored to the runtime date even after a static build.
-    setSelectedDay(todayISO());
-  }, []);
+    // 데모는 기준일(월·화 수업일)에 고정하고, 실서비스는 오늘을 사용합니다.
+    setSelectedDay(state.referenceDate ?? todayISO());
+  }, [state.referenceDate]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -196,6 +197,14 @@ export default function TodayPage() {
           <div className="skeleton-row" />
           <div className="skeleton-row" />
           <div className="skeleton-row" />
+        </div>
+      ) : current.event ? (
+        <div className="holiday-card event-card">
+          <div className="holiday-eyebrow">체험학습</div>
+          <div className="holiday-title">{current.event}</div>
+          <p className="holiday-sub">
+            {current.message ?? "이 날은 수업 대신 체험학습 일정입니다."}
+          </p>
         </div>
       ) : periods.length === 0 ? (
         <div className="holiday-card">

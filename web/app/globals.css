@@ -749,6 +749,53 @@ a {
 }
 .week-day.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
+.timetable-skeleton {
+  margin-top: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 6px 14px;
+}
+.skeleton-row {
+  height: 46px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(90deg, transparent, rgba(85, 70, 245, 0.06), transparent);
+  background-size: 200% 100%;
+  animation: skeleton-sweep 1.2s ease-in-out infinite;
+}
+.skeleton-row:last-child { border-bottom: none; }
+@keyframes skeleton-sweep {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.holiday-card {
+  margin-top: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 20px 16px;
+  text-align: center;
+}
+.holiday-eyebrow {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+.holiday-title {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-top: 6px;
+}
+.holiday-sub {
+  font-size: 0.74rem;
+  color: var(--muted);
+  line-height: 1.55;
+  margin: 6px 0 14px;
+}
+
 .segmented {
   display: grid;
   grid-auto-flow: column;

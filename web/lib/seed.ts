@@ -35,12 +35,12 @@ export const TIMETABLE: Period[] = [
 const LOG_SEED: Array<
   Omit<LogEntry, "id" | "userId" | "isPublic" | "date"> & { dayOffset: number }
 > = [
-  { dayOffset: 0, period: 1, subject: "세포와 물질대사", learned: "세포 호흡과 물질대사의 관계를 배웠다.", activity: "질문", stuck: "ATP 생성 과정" },
-  { dayOffset: 0, period: 2, subject: "기하", learned: "이차곡선의 접선의 방정식을 유도했다.", activity: "문제풀이", stuck: "타원 접선의 기울기" },
-  { dayOffset: 0, period: 3, subject: "독서와 작문", learned: "설득하는 글의 논증 구조를 분석했다.", activity: "필기", stuck: "" },
-  { dayOffset: 0, period: 4, subject: "데이터 과학", learned: "pandas groupby로 반별 평균을 계산했다.", activity: "문제풀이", stuck: "인덱스 재설정" },
-  { dayOffset: 0, period: 6, subject: "미적분Ⅰ", learned: "합성함수의 미분법을 배웠다.", activity: "문제풀이", stuck: "연쇄법칙" },
-  { dayOffset: 0, period: 7, subject: "물질과 에너지", learned: "이상기체 상태방정식을 배웠다.", activity: "필기", stuck: "" },
+  { dayOffset: 3, period: 1, subject: "세포와 물질대사", learned: "세포 호흡과 물질대사의 관계를 배웠다.", activity: "질문", stuck: "ATP 생성 과정" },
+  { dayOffset: 3, period: 2, subject: "기하", learned: "이차곡선의 접선의 방정식을 유도했다.", activity: "문제풀이", stuck: "타원 접선의 기울기" },
+  { dayOffset: 3, period: 3, subject: "독서와 작문", learned: "설득하는 글의 논증 구조를 분석했다.", activity: "필기", stuck: "" },
+  { dayOffset: 3, period: 4, subject: "데이터 과학", learned: "pandas groupby로 반별 평균을 계산했다.", activity: "문제풀이", stuck: "인덱스 재설정" },
+  { dayOffset: 3, period: 6, subject: "미적분Ⅰ", learned: "합성함수의 미분법을 배웠다.", activity: "문제풀이", stuck: "연쇄법칙" },
+  { dayOffset: 3, period: 7, subject: "물질과 에너지", learned: "이상기체 상태방정식을 배웠다.", activity: "필기", stuck: "" },
   { dayOffset: 1, period: 1, subject: "세포와 물질대사", learned: "세포막의 선택적 투과성을 배웠다.", activity: "들음", stuck: "능동 수송" },
   { dayOffset: 1, period: 2, subject: "미적분Ⅰ", learned: "판별식으로 근의 개수를 판별했다.", activity: "문제풀이", stuck: "판별식" },
   { dayOffset: 1, period: 3, subject: "스포츠 생활1", learned: "배드민턴 복식 규칙을 익혔다.", activity: "들음", stuck: "" },

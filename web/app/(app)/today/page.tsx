@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { DailyQuestion } from "@/components/daily-question";
-import { Button, Chip, Empty, Sheet } from "@/components/ui";
+import { Button, Chip, Sheet } from "@/components/ui";
 import { useDemo } from "@/lib/demo-store";
 import { containsProfanity, ruleBasedTags, sanitizeForPublic } from "@/lib/privacy";
 import { DEMO_SCHOOL, TIMETABLE } from "@/lib/seed";
@@ -18,10 +18,21 @@ import {
 
 const ACTIVITIES: Activity[] = ["들음", "필기", "문제풀이", "질문", "이해못함"];
 
+interface TimetableResponse {
+  date: string;
+  school: string;
+  source: "neis" | "sample";
+  periods: Period[];
+  nearest?: { date: string; periods: Period[] };
+  message?: string;
+}
+
 export default function TodayPage() {
   const { state, saveLog, publishPost, unpublish, notify } = useDemo();
   const demoDay = todayISO();
   const [selectedDay, setSelectedDay] = useState(demoDay);
+  const [timetable, setTimetable] = useState<TimetableResponse | null>(null);
+  const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Period | null>(null);
   const [learned, setLearned] = useState("");
   const [activity, setActivity] = useState<Activity>("들음");
@@ -33,8 +44,54 @@ export default function TodayPage() {
     setSelectedDay(todayISO());
   }, []);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+    setLoading(true);
+
+    const query = new URLSearchParams({
+      date: selectedDay,
+      grade: String(state.user.grade),
+      class: state.user.classNo,
+    });
+
+    fetch(`/api/neis/timetable?${query.toString()}`, {
+      signal: controller.signal,
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("timetable request failed");
+        return response.json() as Promise<TimetableResponse>;
+      })
+      .then((data) => {
+        if (!active) return;
+        setTimetable(data);
+      })
+      .catch((error: unknown) => {
+        if (!active || (error instanceof DOMException && error.name === "AbortError")) {
+          return;
+        }
+        setTimetable({
+          date: selectedDay,
+          school: DEMO_SCHOOL,
+          source: "sample",
+          periods: TIMETABLE,
+          message:
+            "NEIS 시간표를 불러오지 못해 샘플 시간표를 표시합니다. 잠시 후 다시 시도해주세요.",
+        });
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [selectedDay, state.user.grade, state.user.classNo]);
+
   const week = useMemo(() => weekDays(selectedDay), [selectedDay]);
-  const periods = selectedDay === demoDay ? TIMETABLE : [];
+  const current = timetable?.date === selectedDay ? timetable : null;
+  const periods = current?.periods ?? [];
   const dayLogs = state.logs.filter(
     (log) => log.userId === state.user.id && log.date === selectedDay,
   );
@@ -45,7 +102,9 @@ export default function TodayPage() {
 
   function openEditor(period: Period) {
     const existing = dayLogs.find((log) => log.period === period.period);
-    setEditing(period);
+    setEditing(
+      existing ? { ...period, subject: existing.subject } : period,
+    );
     setLearned(existing?.learned ?? "");
     setActivity(existing?.activity ?? "들음");
     setStuck(existing?.stuck ?? "");
@@ -99,10 +158,19 @@ export default function TodayPage() {
       <div className="date-head">
         <div className="date-title">
           {formatKoreanDate(selectedDay)}
-          {selectedDay === demoDay ? <span className="pill">DEMO</span> : null}
+          {current ? (
+            <span className={current.source === "neis" ? "pill" : "pill-muted"}>
+              {current.source === "neis" ? "NEIS" : "샘플"}
+            </span>
+          ) : null}
         </div>
         <div className="date-sub">
-          고{state.user.grade} · {state.user.classNo}반 · {DEMO_SCHOOL} · 데모 시간표
+          고{state.user.grade} · {state.user.classNo}반 · {DEMO_SCHOOL} ·{" "}
+          {current
+            ? current.source === "neis"
+              ? "실제 시간표"
+              : "샘플 시간표"
+            : "시간표 불러오는 중"}
         </div>
       </div>
 
@@ -122,16 +190,41 @@ export default function TodayPage() {
         })}
       </div>
 
-      {periods.length === 0 ? (
-        <Empty>
-          이 날은 데모 시간표가 없습니다.
-          <br />
-          11월 3일(화)로 돌아가 주세요.
-        </Empty>
+      {loading || !current ? (
+        <div className="timetable-skeleton" aria-hidden>
+          <div className="skeleton-row" />
+          <div className="skeleton-row" />
+          <div className="skeleton-row" />
+          <div className="skeleton-row" />
+        </div>
+      ) : periods.length === 0 ? (
+        <div className="holiday-card">
+          <div className="holiday-eyebrow">수업 없음</div>
+          <div className="holiday-title">
+            {formatKoreanDate(selectedDay)}은 수업이 없습니다.
+          </div>
+          <p className="holiday-sub">
+            {current.message ?? "주말·휴업일에는 시간표가 없습니다."}
+          </p>
+          {current.nearest ? (
+            <>
+              <p className="helper">
+                다음 수업일은 {formatKoreanDate(current.nearest.date)}입니다.
+              </p>
+              <Button
+                variant="primary"
+                block
+                onClick={() => setSelectedDay(current.nearest!.date)}
+              >
+                다음 수업일 시간표 보기
+              </Button>
+            </>
+          ) : null}
+        </div>
       ) : (
         <>
           <div className="progress-head">
-            <span>오늘의 기록</span>
+            <span>{selectedDay === demoDay ? "오늘의 기록" : "이 날의 기록"}</span>
             <b>
               {logged}/{periods.length}
             </b>
@@ -148,8 +241,10 @@ export default function TodayPage() {
                   <span className="row-num">{period.period}</span>
                   <div className="row-main">
                     <div className="row-title">
-                      {period.subject}
-                      {period.isEvent ? <span className="pill-muted">행사</span> : null}
+                      {log ? log.subject : period.subject}
+                      {period.isEvent && !log ? (
+                        <span className="pill-muted">행사</span>
+                      ) : null}
                     </div>
                     <div className="row-sub">
                       {log ? (

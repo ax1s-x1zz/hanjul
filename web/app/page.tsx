@@ -104,6 +104,7 @@ export default function OnboardingPage() {
           <details className="demo-guide">
             <summary>3분 데모 순서</summary>
             <ol>
+              <li>실제 NEIS 시간표 확인 (주말·휴업일은 ‘다음 수업일’ 버튼)</li>
               <li>오늘 5교시 기록 → 공개</li>
               <li>오늘의 질문 답하기</li>
               <li>리콜 → 3분 플랜 3개 완료</li>

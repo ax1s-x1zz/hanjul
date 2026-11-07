@@ -1,6 +1,6 @@
 import { DEMO_EXAM } from "./seed";
 import type { DemoState } from "./types";
-import { daysUntil } from "./utils";
+import { daysUntil, parseISO, todayISO } from "./utils";
 
 export interface ReadinessComponent {
   key: string;
@@ -103,6 +103,100 @@ export function computeReadiness(state: DemoState): Readiness {
     ],
     weak,
   };
+}
+
+export interface DailyQuestion {
+  concept: string;
+  subject: string;
+  daysAgo: number;
+  reps: number;
+  recallId?: string;
+}
+
+export function pickDailyQuestion(state: DemoState): DailyQuestion | null {
+  const logs = state.logs.filter((log) => log.userId === state.user.id);
+  const recall = state.recall.filter((item) => item.userId === state.user.id);
+  if (!logs.length && !recall.length) return null;
+
+  const candidates = recall.map((item) => ({
+    item,
+    log: logs.find((log) => log.stuck.trim() === item.concept),
+  }));
+
+  if (!candidates.length) {
+    const log = logs.find((entry) => entry.stuck.trim());
+    if (!log) return null;
+    return {
+      concept: log.stuck.trim(),
+      subject: log.subject,
+      daysAgo: 0,
+      reps: 0,
+    };
+  }
+
+  candidates.sort(
+    (a, b) =>
+      a.item.reps - b.item.reps ||
+      (a.log?.date ?? "").localeCompare(b.log?.date ?? ""),
+  );
+  const chosen = candidates[0];
+  const daysAgo = chosen.log
+    ? Math.max(
+        0,
+        Math.round(
+          (parseISO(todayISO()).getTime() - parseISO(chosen.log.date).getTime()) /
+            86400000,
+        ),
+      )
+    : 0;
+
+  return {
+    concept: chosen.item.concept,
+    subject: chosen.log?.subject ?? "기타",
+    daysAgo,
+    reps: chosen.item.reps,
+    recallId: chosen.item.id,
+  };
+}
+
+export interface PlanItem {
+  concept: string;
+  subject: string;
+  recallId: string;
+  reason: string;
+  reps: number;
+}
+
+export function buildThreeMinutePlan(state: DemoState): PlanItem[] {
+  const logs = state.logs.filter((log) => log.userId === state.user.id);
+  const recall = state.recall.filter((item) => item.userId === state.user.id);
+  const today = todayISO();
+  const due = recall.filter((item) => item.dueDate <= today);
+  const ordered = [...due, ...recall].sort(
+    (a, b) => a.reps - b.reps || a.dueDate.localeCompare(b.dueDate),
+  );
+
+  const seen = new Set<string>();
+  const plan: PlanItem[] = [];
+  for (const item of ordered) {
+    if (seen.has(item.concept)) continue;
+    seen.add(item.concept);
+    const log = logs.find((entry) => entry.stuck.trim() === item.concept);
+    const isDue = item.dueDate <= today;
+    plan.push({
+      concept: item.concept,
+      subject: log?.subject ?? "기타",
+      recallId: item.id,
+      reason: isDue
+        ? item.reps === 0
+          ? "오늘 첫 복습"
+          : "오늘 복습"
+        : "가장 약한 개념",
+      reps: item.reps,
+    });
+    if (plan.length === 3) break;
+  }
+  return plan;
 }
 
 export function computeKnowledgeMap(state: DemoState): KnowledgeMap {

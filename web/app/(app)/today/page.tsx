@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 
+import { DailyQuestion } from "@/components/daily-question";
 import { Button, Chip, Empty, Sheet } from "@/components/ui";
 import { useDemo } from "@/lib/demo-store";
 import { containsProfanity, ruleBasedTags, sanitizeForPublic } from "@/lib/privacy";
@@ -172,6 +173,8 @@ export default function TodayPage() {
           </div>
         </>
       )}
+
+      <DailyQuestion />
 
       <Sheet
         open={editing !== null}

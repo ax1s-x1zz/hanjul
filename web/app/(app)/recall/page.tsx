@@ -2,6 +2,7 @@
 
 import { Button, Empty, MetricRow, Section } from "@/components/ui";
 import { ReadinessCard } from "@/components/readiness-card";
+import { ThreeMinutePlan } from "@/components/three-minute-plan";
 import { useDemo } from "@/lib/demo-store";
 import { todayISO } from "@/lib/utils";
 
@@ -23,6 +24,9 @@ export default function RecallPage() {
           { value: remaining, label: "다음 대기" },
         ]}
       />
+
+      <div style={{ height: 12 }} />
+      <ThreeMinutePlan />
 
       <Section>오늘의 복습</Section>
       {due.length === 0 ? (

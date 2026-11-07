@@ -6,7 +6,7 @@ import { Bar, Empty, MetricRow, Section, Segmented } from "@/components/ui";
 import { KnowledgeMapView } from "@/components/knowledge-map";
 import { useDemo } from "@/lib/demo-store";
 import { DEMO_REGION, DEMO_SCHOOL } from "@/lib/seed";
-import { todayISO } from "@/lib/utils";
+import { shortWeekday, todayISO, weekDays } from "@/lib/utils";
 
 type Tab = "mine" | "map" | "region";
 
@@ -30,38 +30,83 @@ function streak(days: string[]): number {
   return best;
 }
 
+function monthDay(value: string): string {
+  return `${Number(value.slice(5, 7))}/${Number(value.slice(8, 10))}`;
+}
+
 export default function ReportPage() {
   const { state } = useDemo();
   const [tab, setTab] = useState<Tab>("mine");
 
-  const logs = state.logs.filter((log) => log.userId === state.user.id);
+  // 데모는 기준일(11/3), 실서비스는 오늘 기준의 주간 리포트.
+  const reference = state.referenceDate ?? todayISO();
+  const week = useMemo(() => weekDays(reference), [reference]);
+  const weekSet = useMemo(() => new Set(week), [week]);
+  const weekStart = monthDay(week[0]);
+  const weekEnd = monthDay(week[6]);
+
+  const logs = useMemo(
+    () => state.logs.filter((log) => log.userId === state.user.id),
+    [state.logs, state.user.id],
+  );
+  const weekLogs = useMemo(
+    () => logs.filter((log) => weekSet.has(log.date)),
+    [logs, weekSet],
+  );
 
   const { subjectCounts, activityCounts, stuckTop } = useMemo(() => {
     const subjectMap = new Map<string, number>();
     const activityMap = new Map<string, number>();
     const stuckMap = new Map<string, number>();
-    for (const log of logs) {
+    const stuckLatest = new Map<string, string>();
+    for (const log of weekLogs) {
       subjectMap.set(log.subject, (subjectMap.get(log.subject) ?? 0) + 1);
       activityMap.set(log.activity, (activityMap.get(log.activity) ?? 0) + 1);
-      if (log.stuck.trim()) {
-        stuckMap.set(log.stuck.trim(), (stuckMap.get(log.stuck.trim()) ?? 0) + 1);
+      const concept = log.stuck.trim();
+      if (concept) {
+        stuckMap.set(concept, (stuckMap.get(concept) ?? 0) + 1);
+        const key = `${log.date}-${String(log.period).padStart(2, "0")}`;
+        if (!stuckLatest.has(concept) || stuckLatest.get(concept)! < key) {
+          stuckLatest.set(concept, key);
+        }
       }
     }
     return {
-      subjectCounts: Array.from(subjectMap.entries()).sort((a, b) => b[1] - a[1]),
-      activityCounts: Array.from(activityMap.entries()).sort((a, b) => b[1] - a[1]),
+      subjectCounts: Array.from(subjectMap.entries()).sort(
+        (a, b) => b[1] - a[1],
+      ),
+      activityCounts: Array.from(activityMap.entries()).sort(
+        (a, b) => b[1] - a[1],
+      ),
       stuckTop: Array.from(stuckMap.entries())
-        .sort((a, b) => b[1] - a[1])
+        .sort(
+          (a, b) =>
+            b[1] - a[1] ||
+            (stuckLatest.get(b[0]) ?? "").localeCompare(
+              stuckLatest.get(a[0]) ?? "",
+            ),
+        )
         .slice(0, 3),
     };
-  }, [logs]);
+  }, [weekLogs]);
 
-  const days = logs.map((log) => log.date);
-  const summary = logs.length
-    ? `이번 주 ${logs.length}개의 수업을 기록했습니다. 가장 자주 막힌 개념은 ${
+  const days = weekLogs.map((log) => log.date);
+  const mostFrequent = stuckTop[0]?.[1] ?? 0;
+  const summary = weekLogs.length
+    ? `${weekStart}–${weekEnd}에 ${weekLogs.length}개의 수업을 기록했습니다. ${
+        mostFrequent > 1 ? "가장 자주 막힌 개념은" : "이번 주에 막힌 개념은"
+      } ${
         stuckTop.map(([concept]) => concept).join(", ") || "아직 없음"
       }입니다. 시험 전에 이 개념부터 다시 확인해보세요.`
     : "이번 주 기록이 아직 없습니다.";
+
+  const recentLogs = useMemo(
+    () =>
+      [...weekLogs].sort(
+        (a, b) => b.date.localeCompare(a.date) || b.period - a.period,
+      ),
+    [weekLogs],
+  );
 
   const regionRows = useMemo(() => {
     const counts = new Map<string, number>();
@@ -99,45 +144,86 @@ export default function ReportPage() {
           <div style={{ height: 12 }} />
           <MetricRow
             items={[
-              { value: logs.length, label: "기록한 수업" },
+              { value: weekLogs.length, label: "기록한 수업" },
               { value: new Set(days).size, label: "기록한 날" },
               { value: streak(days), label: "최장 연속" },
             ]}
           />
 
-          <Section>이번 주 요약</Section>
+          <Section>
+            이번 주 요약 · {weekStart}–{weekEnd}
+          </Section>
           <div className="summary">{summary}</div>
 
-          <div className="grid-2">
-            <div>
-              <Section>과목</Section>
-              {subjectCounts.map(([name, count]) => (
-                <Bar key={name} label={name} value={count} max={subjectMax} suffix="회" />
-              ))}
-            </div>
-            <div>
-              <Section>활동</Section>
-              {activityCounts.map(([name, count]) => (
-                <Bar key={name} label={name} value={count} max={activityMax} suffix="회" />
-              ))}
-            </div>
-          </div>
-
-          <Section>막힌 개념</Section>
-          {stuckTop.length ? (
-            <div className="group">
-              {stuckTop.map(([concept, count], index) => (
-                <div className="list-row" key={concept}>
-                  <span className="row-num">{index + 1}</span>
-                  <div className="row-main">
-                    <div className="row-title">{concept}</div>
-                    <div className="row-sub">{count}회 막힘</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+          {weekLogs.length === 0 ? (
+            <Empty>
+              이번 주 기록이 없습니다.
+              <br />
+              오늘 화면에서 수업 한 줄을 남겨보세요.
+            </Empty>
           ) : (
-            <Empty>막힌 개념을 기록하면 여기에 모입니다.</Empty>
+            <>
+              <Section>이번 주 기록</Section>
+              <div className="group">
+                {recentLogs.map((log) => (
+                  <div className="list-row" key={log.id}>
+                    <span className="row-num">{log.period}</span>
+                    <div className="row-main">
+                      <div className="row-title">{log.learned}</div>
+                      <div className="row-sub">
+                        {monthDay(log.date)} ({shortWeekday(log.date)}) ·{" "}
+                        {log.subject} · {log.activity} ·{" "}
+                        {log.isPublic ? "광명 공개" : "나만 보기"}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid-2">
+                <div>
+                  <Section>과목</Section>
+                  {subjectCounts.map(([name, count]) => (
+                    <Bar
+                      key={name}
+                      label={name}
+                      value={count}
+                      max={subjectMax}
+                      suffix="회"
+                    />
+                  ))}
+                </div>
+                <div>
+                  <Section>활동</Section>
+                  {activityCounts.map(([name, count]) => (
+                    <Bar
+                      key={name}
+                      label={name}
+                      value={count}
+                      max={activityMax}
+                      suffix="회"
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <Section>막힌 개념</Section>
+              {stuckTop.length ? (
+                <div className="group">
+                  {stuckTop.map(([concept, count], index) => (
+                    <div className="list-row" key={concept}>
+                      <span className="row-num">{index + 1}</span>
+                      <div className="row-main">
+                        <div className="row-title">{concept}</div>
+                        <div className="row-sub">{count}회 막힘</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <Empty>막힌 개념을 기록하면 여기에 모입니다.</Empty>
+              )}
+            </>
           )}
         </>
       ) : (
@@ -166,7 +252,7 @@ export default function ReportPage() {
       )}
 
       <p className="helper" style={{ marginTop: 16 }}>
-        {DEMO_SCHOOL} · {todayISO()} 기준
+        {DEMO_SCHOOL} · {weekStart}–{weekEnd} 주간 리포트
       </p>
     </div>
   );
